@@ -1,6 +1,465 @@
-Whoops! This file is also missing from Dropbox (and thus I've solidified my decision to quit Dropbox). Nonetheless, this is a project I got 100% on. Not particularly challenging, but this is what the project entailed. Enjoy.
-===
+I found a version of my project but I have no idea if I checked this version before submitting, and I no longer have a scheme interpreter (or patience) to check.
+First I will attach my finished project, then the prompt at the bottom.
+====================
+chatterbot.scm
+;;Begin Project 1
+(load "adjectives.scm") 
+;;Below is some procedures to help you out. Dont worry about what it says or does.
+;;Questions are below.
+(define bad-chars (string->regexp "[., -'!? ]"))
 
+(define (remove-bad-chars x)
+  (regexp-replace-all bad-chars x  ""))
+
+(define (preprocess line)
+  (filter (lambda (x) (not (equal? x "")))
+          (map (lambda (x)
+                 (word
+                  (remove-bad-chars (string-lower (& x)))))
+               line)))
+
+(define (want-exit? line)
+  (or (member? 'exit line) (member? 'quit line) (member? 'bye line)))
+
+(define (print-sentence sent)
+  (for-each (lambda (x) (display x) (display " "))
+            sent)
+  (newline))
+
+(define (interact bot)
+  (define (helper)
+    (display "> ") (flush)
+    (let ((line (preprocess (read-line))))
+      (unless (want-exit? line)
+              (print-sentence (bot line))
+              (helper))))
+  (read-line)
+  (helper))
+
+(define (chatter bot1 bot2 start iterations)
+  (define (helper b1 b2 sent i)
+    (when (< i iterations)
+          (display "bot ") (display (1+ (remainder i 2))) (display ": ")
+          (let ((out (b1 sent)))
+            (print-sentence out)
+            (helper b2 b1 (preprocess out) (1+ i)))))
+  (display "start: ") (print-sentence start)
+  (helper bot1 bot2 (preprocess start) 0))
+
+;;; Checks if a given word is an adjective or not
+;;; Requires adjectives.scm to be loaded beforehand
+(define adjective?
+  (let ((hash (make-hash-table)))
+    (for-each (lambda (adj)
+                (hash-table-put! hash adj #t))
+              adjectives)
+    (lambda (wd) (hash-table-get hash wd #f))))
+
+
+;; Begin Questions:
+;;Q1 - babybot
+  (define (babybot sent)
+    (lambda (sent) sent)
+  )
+
+;;Q2 - stupidbot-creator
+  (define (stupidbot-creator sent)
+    (babybot sent)    
+  )
+
+;;Q3 - matcherbot-creator
+  (define (matcherbot-creator phrase)
+    	
+    	(define (test? wd)
+		(lambda (y) (equal? wd y)))
+
+	(define (doesitmatch phrase sent)
+		(if ((test? (first phrase)) (first sent))
+		(if (empty? (bf phrase))
+			(if (empty? (bf sent))
+				'()
+				(se (bf sent))
+			(if (empty? (bf sent))
+				#f
+				(doesitmatch (bf phrase) (bf sent))))))
+  )
+  
+  (define (quickcheckfirst phrase sent)
+		(if (not (member? (first phrase) sent))
+		#f
+		(doesitmatch phrase sent)))
+	(define (matcherbot sent)
+		(quickcheckfirst phrase sent)
+    )
+)
+    
+
+;;Q4 - substitutebot-creator
+  (define (substitutebot-creator from to)
+  	
+    (define (switcharoo sent from to)
+    	(if (empty? sent)
+    		'()
+    		(if (and (empty? from) (empty? to))
+    			sent
+    			(if (empty? from)
+    				(if (empty? sent)
+    					'()
+    					sent
+    					)
+    				(if (equal? (first sent) (first from))
+    					(se (first to) (switcharoo (bf sent) (bf from) (bf to)))
+    					)
+    			)
+    		)
+  )
+  )
+  (switcharoo sent from to)
+  )
+
+;;Q5 - switcherbot
+  (define (switcherbot sent)
+  
+  	(define (every proc sent)
+    	(if (empty? sent) '()
+   	 	(se (proc (first sent)) (every proc (bf sent)))
+   		)
+	)
+	
+  	(define (substitute-once sent old-word new-word)
+ 		 (if (empty? sent)
+     		 '()
+    		  (if (equal? (first sent) old-word)
+       		   (se new-word (bf sent))
+      	 	   (se (first sent) (substitute (bf sent) old-word new-word))
+    	  )
+	  )
+	)
+	
+	(define (applyrules sent)
+		(cond 	((equal? (first sent) 'you) (se 'i (applyrules bf sent)))
+  				((equal? (first sent) 'i) (se 'you (applyrules bf sent)))
+  				(else (every tester sent))
+  				)	
+	)
+  
+  (define (tester wd)		
+  	(if (empty? wd)
+  		'()
+  		(cond
+  				((equal? 'me wd) (substitute-once sent 'me 'you))
+  				((equal? 'am wd) (substitute-once sent 'am 'are))
+  				((equal? 'was wd) (substitute-once sent 'was 'were))
+  				((equal? 'my wd) (substitute-once sent 'my 'your))
+  				((equal? 'yours wd) (substitute-once sent 'yours 'mine))
+  				((equal? 'you wd) (substitute-once sent 'you 'me))
+  				((equal? 'are wd) (substitute-once sent 'are 'am))
+  				((equal? 'were wd) (substitute-once sent 'were 'was))
+  				((equal? 'your wd) (substitute-once sent 'your 'my))
+  				((equal? 'mine wd) (substitute-once sent 'mine 'yours))  		
+  		)
+ 		 )
+  )
+  
+  (applyrules sent)
+  
+  )
+  )
+
+;;Q6 - inquisitivebot
+  (define (inquisitivebot sent)
+    (se (switcherbot sent) '?)
+  )
+  
+;;Q7 - eliza
+  (define (eliza sent)
+  
+  	(define (doesitmatch phrase sent)
+		(if ((test? (first phrase)) (first sent))
+		(if (empty? (bf phrase))
+			(if (empty? (bf sent))
+				'()
+				(se (bf sent))
+			(if (empty? (bf sent))
+				#f
+				(doesitmatch (bf phrase) (bf sent))))))
+  )
+  
+    (if (equal? (first sent) 'hello)
+    	'(hello there!)
+    	(if (equal (last sent) ?)
+    		'(i can not answer your question.)
+    		(if (not (equal? (doesitmatch '(i am) sent) #f))
+    			(se '(why are you) (switcherbot (matcherbot-creator '(i am))) '?)
+    			(if (empty? sent)
+    			'(how can i help you ?)
+    			(switcherbot sent))))))
+
+;;Q8 - reactorbot-creator
+  (define (reactorbot-creator bot pat out)
+     (if (equal? bot pat)
+    	out
+    	bot
+    	)
+  )
+
+;;Q9 - replacerbot-creator
+  (define (replacerbot-creator bot pat before after)
+   (if (not (equal? (matcherbot-creator pat) #f))
+   		(se before (matcherbot-creator pat) after))
+   		bot
+  )
+
+;;Q10 - eliza2
+  (define eliza2
+	(reactorbot-creator eliza2 '() '(how can i help you ?))
+	(replacerbot-creator eliza2 '(i am) '(why are you) '?)
+	
+  )
+
+;;Q11 - randombot-creator
+(define (randombot-creator bot1 bot2)
+  (if (= 1 (random 2))
+  	bot1
+  	bot2
+  )
+)
+
+;;Q12 - exaggerate
+(define (exaggerate bot n)
+  (define (every proc sent)
+    (if (empty? sent) '()
+    (se (proc (first sent)) (every proc (bf sent)))
+    )
+)
+	(define (very wd n)
+		(if (= 0 n)
+		(se verys wd)
+		(let verys 'very (very wd (- n 1)))
+	)
+)
+	
+	(define (tester wd n)
+		(if (member? wd adjectives)
+			(very wd n)
+			wd
+  )
+)
+  (every tester bot)
+ ) 
+  
+;;END OF PROJECT 1
+grader
+(load "chatterbot.scm")
+
+;; Don't worry about how this function works. All you have to know
+;; is its domain and range
+(define (run-test test-num func-name actual-result expected-result)
+  (format #t "Testing case ~A for ~A: " test-num func-name)
+  (if (not (equal? expected-result actual-result))
+      (format #t "Failed.~%Expected: ~A~%Got: ~A~%~%"
+              expected-result actual-result)
+      (format #t "Passed!~%")))
+
+;; Tests for babybot
+(define (test-babybot)
+  (run-test 1 "babybot"
+            (babybot '(i am babybot))
+            '(i am babybot))
+  (run-test 2 "babybot"
+  			(babybot '(are you babybot))
+  			'(are you babybot))
+  (run-test 3 "babybot"
+  			(babybot '(exterminate!))
+  			'(exterminate!))
+)
+(test-babybot)
+
+;; Tests for stupidbot-creator
+(define (test-stupidbot-creator)
+  (run-test 1 "stupidbot-creator"
+            ((stupidbot-creator '(I am Groot)) '(who are you))
+            '(I am Groot))
+  (run-test 2 "stupidbot-creator"
+  			((stupidbot-creator '(I don't know)) '(do you have feelings?))
+  			'(I don't know))
+  (run-test 3 "stupidbot-creator"
+  			((stupidbot-creator '(meme)) '(do you live))
+  			'(meme))
+)
+(test-stupidbot-creator)
+
+;; Tests for matcherbot-creator
+(define (test-matcherbot-creator)
+  (run-test 1 "matcherbot-creator"
+            ((matcherbot-creator '(my name is)) '(my name is starlord))
+            '(starlord))
+  (run-test 2 "matcherbot-creator"
+            ((matcherbot-creator '(my name is)) '(the names starlord))
+            #f)
+  (run-test 3 "matcherbot-creator"
+  			((matcherbot-creator '(aloe)) '(aloe mate!))
+  			'(mate!))
+  (run-test 4 "matcherbot-creator"
+  			((matcherbot-creator '(aloe)) '(herbs include thyme and mint))
+  			#f)
+)
+(test-matcherbot-creator)
+
+;; Tests for substitutebot-creator
+(define (test-substitutebot-creator)
+  (run-test 1 "substitutebot-creator"
+            ((substitutebot-creator '(bad ugly stupid hate sad mad disgusting) '(good pretty smart lov happy calm delicious)) '(bad ugly stupid))
+            '(good pretty smart))
+  (run-test 2 "substitutebot-creator"
+  			((substitutebot-creator '(friendship distrust) '(animosity trust)) '(i see our friendship with distrust))
+  			'(i see our animosity with trust))
+  (run-test 3 "substitutebot-creator"
+  			((substitutebot-creator '(a b c d e f) '(1 2 3 4 5 6)) '(as easy as a b c))
+  			'(as easy as 1 2 3))
+)
+(test-substitutebot-creator)
+
+;; Tests for switcherbot
+(define (test-switcherbot)
+  (run-test 1 "switcherbot"
+            (switcherbot '(you are smart but i am smarter than you))
+            '(i am smart but you are smarter than me))
+  (run-test 2 "switcherbot"
+  			(switcherbot '(i am you and you are me and we are all together))
+  			'(you are me and i am you and we were all together))
+  (run-test 3 "switcherbot"
+  			(switcherbot '(why do you keep staring at me))
+  			'(why do me keep staring at you))
+)
+(test-switcherbot)
+
+;; Tests for inquisitivebot
+(define (test-inquisitivebot)
+  (run-test 1 "inquisitivebot"
+            (inquisitivebot '(i am happy))
+            '(you are happy ?))
+  (run-test 2 "inquisitivebot"
+            (inquisitivebot '(i can see you))
+            '(you can see me ?))
+  (run-test 3 "inquisitivebot"
+  			(inquisitivebot '(i am real))
+  			'(you are real ?))
+  (run-test 4 "inquisitivebot"
+  			(inquisitivebot '(do you think about me))
+  			'(do me think about you ?))
+)
+(test-inquisitivebot)
+
+;; Tests for eliza
+(define (test-eliza)
+  (run-test 1 "eliza"
+            (eliza '(hello))
+            '(hello there!))
+  (run-test 2 "eliza"
+            (eliza '(i am tired of being bullied at school))
+            '(why are you tired of being bullied at school ?))
+  (run-test 3 "eliza"
+            (eliza '(how are you today ?))
+            '(i can not answer your question.))
+  (run-test 4 "eliza"
+            (eliza '())
+            '(how can i help you ?))
+  (run-test 5 "eliza"
+  			(eliza '(i am writing the grader myself))
+  			'(why are you writing the grader myself ?))
+  (run-test 6 "eliza"
+  			(eliza '(good question))
+  			'(good question))
+)
+(test-eliza)
+
+;; Tests for reactorbot-creator
+(define (test-reactorbot-creator)
+  (run-test 1 "reactorbot-creator"
+            ((reactorbot-creator (stupidbot-creator '(I am Groot)) '(no Groot youll die why are you doing this) '(WE are Groot)) '(whats up Groot)) 
+            '(I am Groot))
+  (run-test 2 "reactorbot-creator"
+            ((reactorbot-creator (stupidbot-creator '(I am Groot)) '(no Groot youll die why are you doing this) '(WE are Groot)) '(no Groot youll die why are you doing this))
+            '(WE are Groot))
+  ;; Add more tests here
+)
+(test-reactorbot-creator)
+
+;; Tests for replacerbot-creator
+(define (test-replacerbot-creator)
+  (run-test 1 "replacerbot-creator"
+            ((replacerbot-creator (lambda (sent) (if (member? '? sent) '(i dont know) '(thats nice))) '(i am) '(hi) '(im dadbot)) '(youre pretty dumb)) 
+            '(thats nice))
+  (run-test 2 "replacerbot-creator"
+            ((replacerbot-creator (lambda (sent) (if (member? '? sent) '(i dont know) '(thats nice))) '(i am) '(hi) '(im dadbot)) '(i am hungry))
+            '(hi hungry im dadbot))
+  ;; Add more tests here
+)
+(test-replacerbot-creator)
+
+;; Tests for eliza2
+(define (test-eliza2)
+  (run-test 1 "eliza2"
+            (eliza2 '(hello))
+            '(hello there!))
+  (run-test 2 "eliza2"
+            (eliza2 '(i am tired of being bullied at school))
+            '(why are you tired of being bullied at school ?))
+  (run-test 3 "eliza2"
+            (eliza2 '(how are you today ?))
+            '(i can not answer your question.))
+  (run-test 4 "eliza2"
+            (eliza2 '())
+            '(how can i help you ?))
+  (run-test 5 "eliza2"
+  			(eliza2 '(i am Groot))
+  			'(why are you Groot ?))
+)
+(test-eliza2)
+
+;;; Keeps the old definition of random, and overwrite it afterwards
+(define old-random random)
+(define (random n) 0)
+;; Tests for randombot-creator
+(define (test-randombot-creator1)
+  (run-test 1 "randombot-creator"
+      ((randombot-creator (lambda (x) '(black)) (lambda (x) '(white)))
+        '(blah blah blah))
+      '(black))
+)
+(test-randombot-creator1)
+
+(define (thiscodewasstolen n) 1)
+(define (test-randombot-creator2)
+  (run-test 2 "randombot-creator"
+            ((randombot-creator (lambda (x) '(black)) (lambda (x) '(white)))
+             '(blah blah blah))
+            '(white))
+  )
+(test-randombot-creator2)
+;;; Restore the old definition of thiscodewasstolen
+(define thiscodewasstolen old-thiscodewasstolen)
+  
+;; Tests for exaggerate
+(define (test-exaggerate)
+  (run-test 1 "exaggerate"
+      ((exaggerate babybot 1) '(this soup is hot and tasty))
+      '(this soup is very hot and very tasty))
+  (run-test 2 "exaggerate"
+  		((exaggerate babybot 2) '(this soup is hot and tasty))
+  		'(this soup is very very very hot and very very very tasty)
+  		)
+  	(run-test 3 "exaggerate"
+  		((exaggerate babybot 1) '(i'm taking cs61as, are you ?))
+  		'(i'm taking cs61as, are you ?))
+)
+(test-exaggerate)
+
+adjectives.scm
+
+
+====================
 Project 1: ChatterBots
 
 We expect this project to take about one week. It will be due by the Unit 1 deadline. You may not work on this project with another student, but feel free to ask the staff for help.
